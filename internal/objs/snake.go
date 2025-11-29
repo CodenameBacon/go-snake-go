@@ -22,6 +22,10 @@ func (sn *SnakeNode) Position() common.ObjectPosition {
 	return common.ObjectPosition{X: sn.posX, Y: sn.posY}
 }
 
+func (sn *SnakeNode) Next() *SnakeNode {
+	return sn.next
+}
+
 type Snake struct {
 	head      *SnakeNode
 	currDir   common.MoveDirection
@@ -34,6 +38,10 @@ func NewSnake(field Field) *Snake {
 		currDir:   common.DefaultMoveDirectionOnStart,
 		gameField: field,
 	}
+}
+
+func (s *Snake) Head() *SnakeNode {
+	return s.head
 }
 
 // removeTail - removes the last SnakeNode in the ll. Used in Move method.

@@ -7,18 +7,18 @@ import (
 )
 
 type Game struct {
-	score  int
-	field  *objs.Field
-	snake  *objs.Snake
-	apples []*objs.Apple
-	// todo: implement illustrator
-	// todo: implement keyboard listener
+	score       int
+	field       *objs.Field
+	snake       *objs.Snake
+	apples      []*objs.Apple
+	illustrator *SoloGameIllustrator
 }
 
 func NewGame() *Game {
 	newGame := &Game{
-		score: 0,
-		field: objs.NewField(common.DefaultFieldHeight, common.DefaultFieldWidth),
+		score:       0,
+		field:       objs.NewField(common.DefaultFieldHeight, common.DefaultFieldWidth),
+		illustrator: &SoloGameIllustrator{}, // fixme: implement constructor
 	}
 	for i := 0; i < common.DefaultTotalApplesOnStart; i++ {
 		newGame.SpawnApple()
@@ -28,7 +28,7 @@ func NewGame() *Game {
 }
 
 func (g *Game) Run() {
-	go func() {
+	func() {
 		for g.snake != nil {
 			g.tick()
 		}
@@ -48,10 +48,13 @@ func (g *Game) tick() {
 		for _, apple := range g.apples {
 			if g.snake.CheckAppleIntersection(apple) {
 				g.score += 100
+				g.SpawnApple()
 			}
 		}
 	}
-	time.Sleep(250 * time.Millisecond)
+	g.illustrator.ClearScreen()
+	g.illustrator.DrawGameField(g)
+	time.Sleep(50 * time.Millisecond)
 }
 
 func (g *Game) SpawnSnake() {
