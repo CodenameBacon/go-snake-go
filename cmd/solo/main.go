@@ -1,8 +1,11 @@
 package main
 
-import "go-snake-go/internal/game"
+import (
+	"go-snake-go/internal/game/solo"
+)
 
 func main() {
-	game := game.NewGame()
+	game := solo.NewGame()
 	game.Run()
+	select {}
 }

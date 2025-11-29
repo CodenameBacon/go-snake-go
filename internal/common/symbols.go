@@ -6,5 +6,6 @@ type Symbol string
 const (
 	SnakeNode Symbol = "@"
 	Apple     Symbol = "$"
-	FieldWall Symbol = "#"
+	FieldWall Symbol = "Ж"
+	Empty     Symbol = " "
 )

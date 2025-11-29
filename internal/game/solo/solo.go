@@ -1,4 +1,4 @@
-package game
+package solo
 
 import (
 	"go-snake-go/internal/common"
@@ -11,14 +11,14 @@ type Game struct {
 	field       *objs.Field
 	snake       *objs.Snake
 	apples      []*objs.Apple
-	illustrator *SoloGameIllustrator
+	illustrator *GameIllustrator
 }
 
 func NewGame() *Game {
 	newGame := &Game{
 		score:       0,
 		field:       objs.NewField(common.DefaultFieldHeight, common.DefaultFieldWidth),
-		illustrator: &SoloGameIllustrator{}, // fixme: implement constructor
+		illustrator: &GameIllustrator{}, // fixme: implement constructor
 	}
 	for i := 0; i < common.DefaultTotalApplesOnStart; i++ {
 		newGame.SpawnApple()
@@ -28,11 +28,12 @@ func NewGame() *Game {
 }
 
 func (g *Game) Run() {
-	func() {
-		for g.snake != nil {
+	go func() {
+		for {
 			g.tick()
 		}
 	}()
+	go ListenKeyboard(g)
 }
 
 func (g *Game) tick() {
@@ -40,20 +41,25 @@ func (g *Game) tick() {
 		g.SpawnSnake()
 	}
 	g.snake.Move()
-	// todo: illustrate
+	g.illustrator.ClearScreen()
+	g.illustrator.DrawGameField(g)
 	if g.snake.CheckSnakeIntersection(g.snake) {
 		g.snake = nil // kills snake
 		g.score = 0   // resets score
 	} else {
-		for _, apple := range g.apples {
+		eatenApple := -1
+		for index, apple := range g.apples {
 			if g.snake.CheckAppleIntersection(apple) {
 				g.score += 100
 				g.SpawnApple()
+				g.snake.AddTail()
+				eatenApple = index
 			}
 		}
+		if eatenApple >= 0 {
+			g.apples = append(g.apples[:eatenApple], g.apples[eatenApple+1:]...)
+		}
 	}
-	g.illustrator.ClearScreen()
-	g.illustrator.DrawGameField(g)
 	time.Sleep(50 * time.Millisecond)
 }
 

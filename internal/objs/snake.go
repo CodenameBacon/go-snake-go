@@ -44,6 +44,23 @@ func (s *Snake) Head() *SnakeNode {
 	return s.head
 }
 
+func (s *Snake) CurrentDirection() common.MoveDirection {
+	return s.currDir
+}
+
+func (s *Snake) ChangeDirection(dir common.MoveDirection) {
+	s.currDir = dir
+}
+
+func (s *Snake) AddTail() {
+	head := s.head
+	for head.next != nil {
+		head = head.next
+	}
+	// dummy node which will be removed on next tick
+	head.next = &SnakeNode{posX: head.posX, posY: head.posY}
+}
+
 // removeTail - removes the last SnakeNode in the ll. Used in Move method.
 func (s *Snake) removeTail() {
 	head := s.head
@@ -130,6 +147,7 @@ func (s *Snake) CheckAppleIntersection(apple *Apple) bool {
 	}
 	node := s.head
 	for node.next != nil {
+		node = node.next
 		if node.Position() == apple.Position() {
 			return true // intersects with other nodes of snake
 		}
@@ -143,6 +161,7 @@ func (s *Snake) CheckSnakeIntersection(snake *Snake) bool {
 	}
 	node := s.head
 	for node.next != nil {
+		node = node.next
 		if node.Position() == snake.head.Position() {
 			return true // intersects with other nodes of snake
 		}
