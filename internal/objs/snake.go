@@ -113,3 +113,29 @@ func (s *Snake) move() {
 	}
 	s.removeTail() // fixme: should not be used if snake ate an apple on this move
 }
+
+func (s *Snake) CheckAppleIntersection(apple *Apple) bool {
+	if s.head.Position() == apple.Position() {
+		return true // intersects with head
+	}
+	node := s.head
+	for node.next != nil {
+		if node.Position() == apple.Position() {
+			return true // intersects with other nodes of snake
+		}
+	}
+	return false // not intersecting
+}
+
+func (s *Snake) CheckSnakeIntersection(snake *Snake) bool {
+	if &s.head != &snake.head && s.head.Position() == snake.head.Position() {
+		return true // intersects with head
+	}
+	node := s.head
+	for node.next != nil {
+		if node.Position() == snake.head.Position() {
+			return true // intersects with other nodes of snake
+		}
+	}
+	return false // not intersecting
+}

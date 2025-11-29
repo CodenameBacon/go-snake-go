@@ -17,8 +17,10 @@ func NewSoloGame() *SoloGame {
 		common.DefaultFieldHeight,
 		common.DefaultFieldWidth,
 	)
-	// todo: spawn apples
-	// todo: spawn snake
+	for i := 0; i < common.DefaultTotalApplesOnStart; i++ {
+		field.SpawnApple()
+	}
+	field.SpawnSnake()
 	return &SoloGame{
 		score: 0,
 		field: field,
