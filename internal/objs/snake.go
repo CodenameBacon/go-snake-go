@@ -1,0 +1,115 @@
+package objs
+
+import (
+	"fmt"
+	"go-snake-go/internal/common"
+)
+
+type SnakeNode struct {
+	posX, posY int
+	next       *SnakeNode
+}
+
+func NewSnakeNode(posX, posY int) *SnakeNode {
+	return &SnakeNode{
+		posX: posX,
+		posY: posY,
+		next: nil,
+	}
+}
+
+func (sn *SnakeNode) Position() (int, int) {
+	return sn.posX, sn.posY
+}
+
+type Snake struct {
+	head      *SnakeNode
+	currDir   common.MoveDirection
+	gameField Field
+}
+
+func NewSnake(posX, posY int) *Snake {
+	return &Snake{
+		head: NewSnakeNode(posX, posY),
+	}
+}
+
+// removeTail - removes the last SnakeNode in the ll. Used in move method.
+func (s *Snake) removeTail() {
+	head := s.head
+	for head.next != nil && head.next.next != nil {
+		head = head.next
+	}
+	head.next = nil
+}
+
+func (s *Snake) insertHeadUp() {
+	prevHead := s.head
+	newPosY := prevHead.posY - 1
+	if newPosY < 0 {
+		newPosY = s.gameField.Height() - 1
+	}
+	newHead := &SnakeNode{
+		posX: prevHead.posX,
+		posY: newPosY,
+		next: prevHead,
+	}
+	s.head = newHead
+}
+
+func (s *Snake) insertHeadDown() {
+	prevHead := s.head
+	newPosY := prevHead.posY + 1
+	if newPosY > s.gameField.Height()-1 {
+		newPosY = newPosY - s.gameField.Height()
+	}
+	newHead := &SnakeNode{
+		posX: prevHead.posX,
+		posY: newPosY,
+		next: prevHead,
+	}
+	s.head = newHead
+}
+
+func (s *Snake) insertHeadLeft() {
+	prevHead := s.head
+	newPosX := prevHead.posX - 1
+	if newPosX < 0 {
+		newPosX = s.gameField.Width() - 1
+	}
+	newHead := &SnakeNode{
+		posX: newPosX,
+		posY: prevHead.posY,
+		next: prevHead,
+	}
+	s.head = newHead
+}
+
+func (s *Snake) insertHeadRight() {
+	prevHead := s.head
+	newPosX := prevHead.posX + 1
+	if newPosX > s.gameField.Width()-1 {
+		newPosX = newPosX - s.gameField.Width()
+	}
+	newHead := &SnakeNode{
+		posX: newPosX,
+		posY: prevHead.posY,
+		next: prevHead,
+	}
+	s.head = newHead
+}
+
+func (s *Snake) move() {
+	methodsToCall := map[common.MoveDirection]func(){
+		common.MoveDirectionUp:    s.insertHeadUp,
+		common.MoveDirectionDown:  s.insertHeadDown,
+		common.MoveDirectionLeft:  s.insertHeadLeft,
+		common.MoveDirectionRight: s.insertHeadRight,
+	}
+	if methodsToCall[s.currDir] != nil {
+		methodsToCall[s.currDir]()
+	} else {
+		panic(fmt.Sprintf("Impossible move for perform: %s", s.currDir))
+	}
+	s.removeTail() // fixme: should not be used if snake ate an apple on this move
+}
