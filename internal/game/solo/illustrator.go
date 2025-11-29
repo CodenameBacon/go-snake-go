@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go-snake-go/internal/common"
 	"os"
+	"strings"
 )
 
 type GameIllustrator struct{}
@@ -16,14 +17,14 @@ func (gi *GameIllustrator) DrawGameField(game *Game) {
 	width := game.field.Width() + 2   // + 2 for borders
 	height := game.field.Height() + 2 // + 2 for borders
 
-	grid := make([][]rune, height)
+	grid := make([][]string, height)
 	for i := range grid {
-		grid[i] = make([]rune, width)
+		grid[i] = make([]string, width)
 		for j := range grid[i] {
 			if i == 0 || i == height-1 || j == 0 || j == width-1 {
-				grid[i][j] = rune(common.FieldWall[0])
+				grid[i][j] = common.FieldWall
 			} else {
-				grid[i][j] = rune(common.Empty[0])
+				grid[i][j] = common.Empty
 			}
 		}
 	}
@@ -33,7 +34,7 @@ func (gi *GameIllustrator) DrawGameField(game *Game) {
 		posX := apple.Position().X
 		if posY >= 0 && posY < height &&
 			posX >= 0 && posX < width {
-			grid[posY+1][posX+1] = rune(common.Apple[0]) // + 1 for borders
+			grid[posY+1][posX+1] = common.Apple // + 1 for borders
 		}
 	}
 
@@ -43,13 +44,13 @@ func (gi *GameIllustrator) DrawGameField(game *Game) {
 		posX := node.Position().X
 		if posY >= 0 && posY < height &&
 			posX >= 0 && posX < width {
-			grid[posY+1][posX+1] = rune(common.SnakeNode[0]) // + 1 for borders
+			grid[posY+1][posX+1] = common.SnakeNode // + 1 for borders
 		}
 		node = node.Next()
 	}
 
 	for _, row := range grid {
-		fmt.Fprintln(os.Stdout, string(row))
+		fmt.Fprintln(os.Stdout, strings.Join(row, ""))
 	}
 
 	fmt.Fprintln(os.Stdout, fmt.Sprintf("Score: %d\n", game.score))

@@ -37,15 +37,13 @@ func (g *Game) Run() {
 }
 
 func (g *Game) tick() {
-	if g.snake == nil {
-		g.SpawnSnake()
-	}
 	g.snake.Move()
 	g.illustrator.ClearScreen()
 	g.illustrator.DrawGameField(g)
 	if g.snake.CheckSnakeIntersection(g.snake) {
 		g.snake = nil // kills snake
 		g.score = 0   // resets score
+		g.SpawnSnake()
 	} else {
 		eatenApple := -1
 		for index, apple := range g.apples {
@@ -60,7 +58,7 @@ func (g *Game) tick() {
 			g.apples = append(g.apples[:eatenApple], g.apples[eatenApple+1:]...)
 		}
 	}
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 }
 
 func (g *Game) SpawnSnake() {
