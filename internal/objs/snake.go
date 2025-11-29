@@ -18,8 +18,8 @@ func NewSnakeNode(posX, posY int) *SnakeNode {
 	}
 }
 
-func (sn *SnakeNode) Position() (int, int) {
-	return sn.posX, sn.posY
+func (sn *SnakeNode) Position() common.ObjectPosition {
+	return common.ObjectPosition{X: sn.posX, Y: sn.posY}
 }
 
 type Snake struct {
@@ -28,13 +28,15 @@ type Snake struct {
 	gameField Field
 }
 
-func NewSnake(posX, posY int) *Snake {
+func NewSnake(field Field) *Snake {
 	return &Snake{
-		head: NewSnakeNode(posX, posY),
+		head:      NewSnakeNode(common.GetRandomPosition(field.Height(), field.Width())),
+		currDir:   common.DefaultMoveDirectionOnStart,
+		gameField: field,
 	}
 }
 
-// removeTail - removes the last SnakeNode in the ll. Used in move method.
+// removeTail - removes the last SnakeNode in the ll. Used in Move method.
 func (s *Snake) removeTail() {
 	head := s.head
 	for head.next != nil && head.next.next != nil {
@@ -99,7 +101,7 @@ func (s *Snake) insertHeadRight() {
 	s.head = newHead
 }
 
-func (s *Snake) move() {
+func (s *Snake) Move() {
 	methodsToCall := map[common.MoveDirection]func(){
 		common.MoveDirectionUp:    s.insertHeadUp,
 		common.MoveDirectionDown:  s.insertHeadDown,
@@ -109,9 +111,9 @@ func (s *Snake) move() {
 	if methodsToCall[s.currDir] != nil {
 		methodsToCall[s.currDir]()
 	} else {
-		panic(fmt.Sprintf("Impossible move for perform: %s", s.currDir))
+		panic(fmt.Sprintf("Impossible Move for perform: %s", s.currDir))
 	}
-	s.removeTail() // fixme: should not be used if snake ate an apple on this move
+	s.removeTail() // fixme: should not be used if snake ate an apple on this Move
 }
 
 func (s *Snake) CheckAppleIntersection(apple *Apple) bool {

@@ -1,5 +1,7 @@
 package objs
 
+import "go-snake-go/internal/common"
+
 type Apple struct {
 	posX, posY int
 }
@@ -11,8 +13,8 @@ func NewApple(posX, posY int) *Apple {
 	}
 }
 
-func (a *Apple) Position() (int, int) {
-	return a.posX, a.posY
+func (a *Apple) Position() common.ObjectPosition {
+	return common.ObjectPosition{X: a.posX, Y: a.posY}
 }
 
 func (a *Apple) CheckAppleIntersection(apple *Apple) bool {
