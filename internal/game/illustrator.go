@@ -2,6 +2,7 @@ package game
 
 import (
 	"go-snake-go/internal/common"
+	"go-snake-go/internal/objs"
 	"os"
 	"strings"
 )
@@ -37,21 +38,12 @@ func drawGameField(sessionModel *SessionModel) {
 		grid[i] = row
 	}
 
-	for _, apple := range sessionModel.Apples {
-		y := apple.Position.Y + 1
-		x := apple.Position.X + 1
-		if y >= 1 && y < height-1 && x >= 1 && x < width-1 {
-			grid[y][x] = common.Apple
-		}
-	}
-
-	for _, snake := range sessionModel.Snakes {
-		for _, node := range snake.Nodes {
-			y := node.Position.Y + 1
-			x := node.Position.X + 1
-			if y >= 1 && y < height-1 && x >= 1 && x < width-1 {
-				grid[y][x] = common.SnakeNode
-			}
+	for position, cellType := range sessionModel.Field.Cells {
+		switch cellType {
+		case objs.CellSnake:
+			grid[position.Y+1][position.X+1] = common.SnakeNode // + 1 for borders
+		case objs.CellApple:
+			grid[position.Y+1][position.X+1] = common.Apple // + 1 for borders
 		}
 	}
 

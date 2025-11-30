@@ -13,7 +13,7 @@ type Snake struct {
 
 func NewSnake(field *Field) *Snake {
 	return &Snake{
-		head:      NewSnakeNode(common.GetRandomPosition(field.height, field.width), nil),
+		head:      NewSnakeNode(field.GetEmptyPosition(), nil),
 		direction: common.DefaultMoveDirectionOnStart,
 		field:     field,
 	}
@@ -57,50 +57,41 @@ func (s *Snake) Grow() {
 	head.next = NewSnakeNode(head.position, nil)
 }
 
-// Move - places tail node as new head on the position after move
 func (s *Snake) Move() {
-	headPosition := s.getHeadPositionAfterMove()
+	newHeadPos := s.GetHeadPositionAfterMove()
+
+	// handling move of snake with len = 1
+	if s.head.next == nil {
+		s.field.ClearCell(s.head.position)
+		s.head.position = newHeadPos
+		s.field.SetCellType(newHeadPos, CellSnake)
+		return
+	}
+
+	// handling move of snake with len > 1
 	preTail := s.head
 	for preTail.next != nil && preTail.next.next != nil {
 		preTail = preTail.next
 	}
-	oldHead := s.head
-	// if snakeLength > 1
 	if preTail.next != nil {
-		s.head = preTail.next
+		s.field.ClearCell(preTail.next.position)
+		preTail.next = nil
 	}
-	s.head.position = headPosition
-	s.head.next = oldHead
-	preTail.next = nil
+
+	s.head = NewSnakeNode(newHeadPos, s.head)
+	s.field.SetCellType(newHeadPos, CellSnake)
 }
 
-func (s *Snake) CheckAppleIntersection(apple *Apple) bool {
+func (s *Snake) Kill() {
 	node := s.head
 	for node != nil {
-		if node.position == apple.position {
-			return true
-		}
+		s.field.ClearCell(node.position)
 		node = node.next
 	}
-	return false
+	s.head = nil
 }
 
-// fixme: refactor this piece of shit
-func (s *Snake) CheckSnakeIntersection(snake *Snake) bool {
-	if &s.head != &snake.head && s.head.position == snake.head.position {
-		return true
-	}
-	node := s.head
-	for node.next != nil {
-		node = node.next
-		if node.position == snake.head.position {
-			return true
-		}
-	}
-	return false
-}
-
-func (s *Snake) getHeadPositionAfterMove() common.ObjectPosition {
+func (s *Snake) GetHeadPositionAfterMove() common.ObjectPosition {
 	position := s.head.position
 	actions := map[common.MoveDirection]func(){
 		common.MoveDirectionUp: func() {
@@ -131,7 +122,7 @@ func (s *Snake) getHeadPositionAfterMove() common.ObjectPosition {
 	if actions[s.direction] != nil {
 		actions[s.direction]()
 	} else {
-		panic(fmt.Sprintf("Impossible Move for perform: %s", s.direction))
+		panic(fmt.Sprintf("Impossible Move for perform: %v", s.direction))
 	}
 	return position
 }

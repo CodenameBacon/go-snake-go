@@ -7,10 +7,8 @@ import (
 )
 
 type SessionModel struct {
-	Scores map[uuid.UUID]int  `json:"scores"`
-	Snakes []*objs.SnakeModel `json:"snakes"`
-	Apples []*objs.AppleModel `json:"apples"`
-	Field  *objs.FieldModel   `json:"field"`
+	Scores map[uuid.UUID]int `json:"scores"`
+	Field  *objs.FieldModel  `json:"field"`
 }
 
 type CurrentPlayerModel struct {
