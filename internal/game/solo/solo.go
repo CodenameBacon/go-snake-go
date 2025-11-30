@@ -58,11 +58,11 @@ func (g *Game) tick() {
 			g.apples = append(g.apples[:eatenApple], g.apples[eatenApple+1:]...)
 		}
 	}
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 }
 
 func (g *Game) SpawnSnake() {
-	snake := objs.NewSnake(*g.field)
+	snake := objs.NewSnake(g.field)
 
 	// fixme: implement no loop variation (based on map probably)
 	for func() bool {
@@ -72,7 +72,7 @@ func (g *Game) SpawnSnake() {
 		}
 		return result
 	}() {
-		snake = objs.NewSnake(*g.field)
+		snake = objs.NewSnake(g.field)
 	}
 	g.snake = snake
 }
