@@ -1,53 +1,64 @@
 package game
 
 import (
-	"fmt"
 	"go-snake-go/internal/common"
 	"os"
 	"strings"
 )
 
-func clearScreen() {
-	fmt.Fprint(os.Stdout, "\033[2J\033[H")
+func InitTerminal() {
+	os.Stdout.Write(common.HideCursor)
+	os.Stdout.Write(common.CursorHome)
+	os.Stdout.Write(common.ClearBelow)
+}
+
+func ResetTerminal() {
+	os.Stdout.Write(common.ShowCursor)
 }
 
 func drawGameField(sessionModel *SessionModel) {
-	width := sessionModel.Field.Width + 2   // + 2 for borders
-	height := sessionModel.Field.Height + 2 // + 2 for borders
+	width := sessionModel.Field.Width + 2
+	height := sessionModel.Field.Height + 2
+	os.Stdout.Write(common.CursorHome)
+
+	sb := strings.Builder{}
+	sb.Grow(width * height * 2)
 
 	grid := make([][]string, height)
 	for i := range grid {
-		grid[i] = make([]string, width)
-		for j := range grid[i] {
+		row := make([]string, width)
+		for j := range row {
 			if i == 0 || i == height-1 || j == 0 || j == width-1 {
-				grid[i][j] = common.FieldWall
+				row[j] = common.FieldWall
 			} else {
-				grid[i][j] = common.Empty
+				row[j] = common.Empty
 			}
 		}
+		grid[i] = row
 	}
 
 	for _, apple := range sessionModel.Apples {
-		posY := apple.Position.Y
-		posX := apple.Position.X
-		if posY >= 0 && posY < height &&
-			posX >= 0 && posX < width {
-			grid[posY+1][posX+1] = common.Apple // + 1 for borders
+		y := apple.Position.Y + 1
+		x := apple.Position.X + 1
+		if y >= 1 && y < height-1 && x >= 1 && x < width-1 {
+			grid[y][x] = common.Apple
 		}
 	}
 
 	for _, snake := range sessionModel.Snakes {
 		for _, node := range snake.Nodes {
-			if node.Position.Y >= 0 && node.Position.Y < height &&
-				node.Position.X >= 0 && node.Position.X < width {
-				grid[node.Position.Y+1][node.Position.X+1] = common.SnakeNode // + 1 for borders
+			y := node.Position.Y + 1
+			x := node.Position.X + 1
+			if y >= 1 && y < height-1 && x >= 1 && x < width-1 {
+				grid[y][x] = common.SnakeNode
 			}
 		}
 	}
 
 	for _, row := range grid {
-		fmt.Fprintln(os.Stdout, strings.Join(row, ""))
+		sb.WriteString(strings.Join(row, ""))
+		sb.WriteByte('\n')
 	}
 
-	// todo: draw scores
+	os.Stdout.Write([]byte(sb.String()))
 }

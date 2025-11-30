@@ -11,6 +11,7 @@ func main() {
 		&game.SoloStateServer{},
 	)
 	clientManager := game.NewSoloClientManager(player.Id(), session)
+	game.InitTerminal()
 	go session.Run()
 	go clientManager.ListenKeyboard()
 	select {}
