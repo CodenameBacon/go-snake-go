@@ -58,7 +58,7 @@ func (g *Game) tick() {
 			g.apples = append(g.apples[:eatenApple], g.apples[eatenApple+1:]...)
 		}
 	}
-	time.Sleep(300 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 }
 
 func (g *Game) SpawnSnake() {
@@ -78,7 +78,7 @@ func (g *Game) SpawnSnake() {
 }
 
 func (g *Game) SpawnApple() {
-	apple := objs.NewApple(common.GetRandomPosition(g.field.Height(), g.field.Width()))
+	apple := objs.NewApple(g.field)
 
 	// fixme: implement no loop variation (based on map probably)
 	for func() bool {
@@ -91,12 +91,7 @@ func (g *Game) SpawnApple() {
 		}
 		return result
 	}() {
-		apple = objs.NewApple(
-			common.GetRandomPosition(
-				g.field.Height(),
-				g.field.Width(),
-			),
-		)
+		apple = objs.NewApple(g.field)
 	}
 	g.apples = append(g.apples, apple)
 }

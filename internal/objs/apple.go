@@ -3,20 +3,19 @@ package objs
 import "go-snake-go/internal/common"
 
 type Apple struct {
-	posX, posY int
+	position common.ObjectPosition
 }
 
-func NewApple(posX, posY int) *Apple {
+func NewApple(field *Field) *Apple {
 	return &Apple{
-		posX: posX,
-		posY: posY,
+		position: common.GetRandomPosition(field.Height(), field.Width()),
 	}
 }
 
 func (a *Apple) Position() common.ObjectPosition {
-	return common.ObjectPosition{X: a.posX, Y: a.posY}
+	return a.position
 }
 
 func (a *Apple) CheckAppleIntersection(apple *Apple) bool {
-	return a.Position() == apple.Position()
+	return a.position == apple.position
 }
