@@ -27,8 +27,25 @@ func (s *Snake) CurrentDirection() common.MoveDirection {
 	return s.direction
 }
 
-func (s *Snake) ChangeDirection(dir common.MoveDirection) {
-	s.direction = dir
+func (s *Snake) ChangeDirection(direction common.MoveDirection) {
+	switch direction {
+	case common.MoveDirectionUp:
+		if s.CurrentDirection() != common.MoveDirectionDown {
+			s.direction = common.MoveDirectionUp
+		}
+	case common.MoveDirectionDown:
+		if s.CurrentDirection() != common.MoveDirectionUp {
+			s.direction = common.MoveDirectionDown
+		}
+	case common.MoveDirectionLeft:
+		if s.CurrentDirection() != common.MoveDirectionRight {
+			s.direction = common.MoveDirectionLeft
+		}
+	case common.MoveDirectionRight:
+		if s.CurrentDirection() != common.MoveDirectionLeft {
+			s.direction = common.MoveDirectionRight
+		}
+	}
 }
 
 // Grow - adds new SnakeNode as tail which will be placed as head on the next tick

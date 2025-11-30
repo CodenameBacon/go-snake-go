@@ -1,10 +1,10 @@
 package common
 
-type MoveDirection string
+type MoveDirection int
 
 const (
-	MoveDirectionUp    MoveDirection = "up"
-	MoveDirectionDown  MoveDirection = "down"
-	MoveDirectionLeft  MoveDirection = "left"
-	MoveDirectionRight MoveDirection = "right"
+	MoveDirectionUp    MoveDirection = 1
+	MoveDirectionDown  MoveDirection = 2
+	MoveDirectionLeft  MoveDirection = 3
+	MoveDirectionRight MoveDirection = 4
 )
