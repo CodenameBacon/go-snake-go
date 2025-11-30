@@ -12,9 +12,8 @@ type Snake struct {
 }
 
 func NewSnake(field *Field) *Snake {
-	headPosX, headPosY := common.GetRandomPosition(field.Height(), field.Width())
 	return &Snake{
-		head:      NewSnakeNode(headPosX, headPosY, nil),
+		head:      NewSnakeNode(common.GetRandomPosition(field.Height(), field.Width()), nil),
 		direction: common.DefaultMoveDirectionOnStart,
 		field:     field,
 	}
@@ -38,12 +37,12 @@ func (s *Snake) AddTail() {
 		head = head.next
 	}
 	// dummy node which will be removed on next tick
-	head.next = NewSnakeNode(head.position.X, head.position.Y, nil)
+	head.next = NewSnakeNode(head.position, nil)
 }
 
 func (s *Snake) Move() {
 	newPosition := s.getHeadPositionAfterMove()
-	newHead := NewSnakeNode(newPosition.X, newPosition.Y, s.head)
+	newHead := NewSnakeNode(newPosition, s.head)
 	s.head = newHead
 	s.removeTail() // fixme: should not be used if snake ate an apple on this Move
 }
@@ -51,7 +50,7 @@ func (s *Snake) Move() {
 func (s *Snake) CheckAppleIntersection(apple *Apple) bool {
 	node := s.head
 	for node != nil {
-		if node.position == apple.Position() {
+		if node.position == apple.position {
 			return true
 		}
 		node = node.next

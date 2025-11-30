@@ -7,10 +7,10 @@ type SnakeNode struct {
 	position common.ObjectPosition
 }
 
-func NewSnakeNode(posX, posY int, next *SnakeNode) *SnakeNode {
+func NewSnakeNode(position common.ObjectPosition, next *SnakeNode) *SnakeNode {
 	return &SnakeNode{
 		next:     next,
-		position: common.ObjectPosition{X: posX, Y: posY},
+		position: position,
 	}
 }
 
