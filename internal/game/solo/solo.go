@@ -50,7 +50,7 @@ func (g *Game) tick() {
 			if g.snake.CheckAppleIntersection(apple) {
 				g.score += 100
 				g.SpawnApple()
-				g.snake.AddTail()
+				g.snake.Grow()
 				eatenApple = index
 			}
 		}
