@@ -85,6 +85,7 @@ func (s *Snake) CheckAppleIntersection(apple *Apple) bool {
 	return false
 }
 
+// fixme: refactor this piece of shit
 func (s *Snake) CheckSnakeIntersection(snake *Snake) bool {
 	if &s.head != &snake.head && s.head.position == snake.head.position {
 		return true

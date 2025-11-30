@@ -10,17 +10,25 @@ import (
 
 type ClientManager interface {
 	ListenKeyboard()
-	sendAction(action PlayerAction)
+	sendAction()
 }
 
 // SoloClientManager - implementation of ClientManager for solo gameplay
 type SoloClientManager struct {
 	playerId uuid.UUID
 	session  *Session
+
+	actionsChan chan PlayerAction
 }
 
 func NewSoloClientManager(playerId uuid.UUID, session *Session) *SoloClientManager {
-	return &SoloClientManager{playerId: playerId, session: session}
+	cm := &SoloClientManager{
+		playerId:    playerId,
+		session:     session,
+		actionsChan: make(chan PlayerAction),
+	}
+	go cm.sendAction()
+	return cm
 }
 
 func (cm SoloClientManager) ListenKeyboard() {
@@ -38,32 +46,34 @@ func (cm SoloClientManager) ListenKeyboard() {
 		}
 		switch key {
 		case keyboard.KeyEsc:
-			cm.sendAction(PlayerQuitGame)
+			cm.actionsChan <- PlayerQuitGame
 			_ = keyboard.Close()
 			os.Exit(0)
 		case keyboard.KeyArrowUp:
-			cm.sendAction(PlayerChangeDirectionUp)
+			cm.actionsChan <- PlayerChangeDirectionUp
 		case keyboard.KeyArrowDown:
-			cm.sendAction(PlayerChangeDirectionDown)
+			cm.actionsChan <- PlayerChangeDirectionDown
 		case keyboard.KeyArrowLeft:
-			cm.sendAction(PlayerChangeDirectionLeft)
+			cm.actionsChan <- PlayerChangeDirectionLeft
 		case keyboard.KeyArrowRight:
-			cm.sendAction(PlayerChangeDirectionRight)
+			cm.actionsChan <- PlayerChangeDirectionRight
 		default:
 			continue
 		}
 	}
 }
 
-func (cm SoloClientManager) sendAction(action PlayerAction) {
-	switch action {
-	case PlayerChangeDirectionUp:
-		cm.session.ChangePlayersDirection(cm.playerId, common.MoveDirectionUp)
-	case PlayerChangeDirectionDown:
-		cm.session.ChangePlayersDirection(cm.playerId, common.MoveDirectionDown)
-	case PlayerChangeDirectionLeft:
-		cm.session.ChangePlayersDirection(cm.playerId, common.MoveDirectionLeft)
-	case PlayerChangeDirectionRight:
-		cm.session.ChangePlayersDirection(cm.playerId, common.MoveDirectionRight)
+func (cm SoloClientManager) sendAction() {
+	for action := range cm.actionsChan {
+		switch action {
+		case PlayerChangeDirectionUp:
+			cm.session.ChangePlayersDirection(cm.playerId, common.MoveDirectionUp)
+		case PlayerChangeDirectionDown:
+			cm.session.ChangePlayersDirection(cm.playerId, common.MoveDirectionDown)
+		case PlayerChangeDirectionLeft:
+			cm.session.ChangePlayersDirection(cm.playerId, common.MoveDirectionLeft)
+		case PlayerChangeDirectionRight:
+			cm.session.ChangePlayersDirection(cm.playerId, common.MoveDirectionRight)
+		}
 	}
 }
