@@ -47,6 +47,7 @@ func (cm SoloClientManager) ListenKeyboard() {
 		switch key {
 		case keyboard.KeyEsc:
 			cm.actionsChan <- PlayerQuitGame
+			ResetTerminal()
 			_ = keyboard.Close()
 			os.Exit(0)
 		case keyboard.KeyArrowUp:
