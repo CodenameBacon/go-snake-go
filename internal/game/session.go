@@ -38,23 +38,23 @@ func NewSession(players []*Player, stateServer StateServer) *Session {
 	return session
 }
 
-func (g *Session) Run() {
+func (s *Session) Run() {
 	for {
-		g.tick()
+		s.tick()
 	}
 }
 
-func (g *Session) ChangePlayersDirection(playerId uuid.UUID, direction common.MoveDirection) {
-	if snake := g.snakes[playerId]; snake != nil {
+func (s *Session) ChangePlayersDirection(playerId uuid.UUID, direction common.MoveDirection) {
+	if snake := s.snakes[playerId]; snake != nil {
 		snake.ChangeDirection(direction)
 	} else {
 		// todo: log error
 	}
 }
 
-func (g *Session) tick() {
+func (s *Session) tick() {
 	future := make(map[uuid.UUID]common.ObjectPosition)
-	for playerId, snake := range g.snakes {
+	for playerId, snake := range s.snakes {
 		future[playerId] = snake.GetHeadPositionAfterMove()
 	}
 
@@ -80,7 +80,7 @@ func (g *Session) tick() {
 		if toKill[playerId] {
 			continue
 		}
-		if g.field.CheckCellType(position) == objs.CellSnake {
+		if s.field.CheckCellType(position) == objs.CellSnake {
 			toKill[playerId] = true
 		}
 	}
@@ -95,8 +95,8 @@ func (g *Session) tick() {
 				continue
 			}
 			// killing both
-			if positionA == g.snakes[playerB].Head().Position() &&
-				positionB == g.snakes[playerA].Head().Position() {
+			if positionA == s.snakes[playerB].Head().Position() &&
+				positionB == s.snakes[playerA].Head().Position() {
 				toKill[playerA] = true
 				toKill[playerB] = true
 			}
@@ -104,20 +104,20 @@ func (g *Session) tick() {
 	}
 
 	// move
-	for playerId, snake := range g.snakes {
+	for playerId, snake := range s.snakes {
 		if toKill[playerId] {
 			snake.Kill()
-			g.scores[playerId] = common.DefaultScoreOnStart
-			g.snakes[playerId] = g.field.SpawnSnake()
+			s.scores[playerId] = common.DefaultScoreOnStart
+			s.snakes[playerId] = s.field.SpawnSnake()
 			continue
 		}
 
-		switch g.field.CheckCellType(future[playerId]) {
+		switch s.field.CheckCellType(future[playerId]) {
 		case objs.CellApple:
-			g.scores[playerId] += common.DefaultScoreIncrease
+			s.scores[playerId] += common.DefaultScoreIncrease
 			snake.Grow()
-			g.field.ClearCell(future[playerId])
-			g.field.SpawnApple()
+			s.field.ClearCell(future[playerId])
+			s.field.SpawnApple()
 			snake.Move()
 		case objs.CellEmpty:
 			snake.Move()
@@ -126,16 +126,16 @@ func (g *Session) tick() {
 	}
 
 	time.Sleep(100 * time.Millisecond)
-	g.stateServer.SendPublicState(g.buildPublicState())
+	s.stateServer.SendPublicState(s.buildPublicState())
 }
 
-func (g *Session) buildPublicState() *SessionModel {
+func (s *Session) buildPublicState() *SessionModel {
 	return &SessionModel{
-		Scores: g.scores,
+		Scores: s.scores,
 		Field: &objs.FieldModel{
-			Height: g.field.Height(),
-			Width:  g.field.Width(),
-			Cells:  g.field.CellsMap(),
+			Height: s.field.Height(),
+			Width:  s.field.Width(),
+			Cells:  s.field.CellsMap(),
 		},
 	}
 }
