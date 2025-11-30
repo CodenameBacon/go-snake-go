@@ -125,8 +125,8 @@ func (s *Session) tick() {
 		}
 	}
 
-	time.Sleep(100 * time.Millisecond)
 	s.stateServer.SendPublicState(s.buildPublicState())
+	time.Sleep(100 * time.Millisecond)
 }
 
 func (s *Session) buildPublicState() *SessionModel {
