@@ -8,7 +8,7 @@ type Apple struct {
 
 func NewApple(field *Field) *Apple {
 	return &Apple{
-		position: common.GetRandomPosition(field.Height(), field.Width()),
+		position: common.GetRandomPosition(field.height, field.width),
 	}
 }
 
