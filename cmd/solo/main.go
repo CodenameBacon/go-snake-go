@@ -1,11 +1,17 @@
 package main
 
 import (
-	"go-snake-go/internal/game/solo"
+	"go-snake-go/internal/game"
 )
 
 func main() {
-	game := solo.NewGame()
-	game.Run()
+	player := game.NewPlayer("you")
+	session := game.NewSession(
+		append(make([]*game.Player, 0), player),
+		&game.SoloStateServer{},
+	)
+	clientManager := game.NewSoloClientManager(player.Id(), session)
+	go session.Run()
+	go clientManager.ListenKeyboard()
 	select {}
 }

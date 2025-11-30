@@ -8,17 +8,22 @@ import (
 	"github.com/google/uuid"
 )
 
-type GameSession struct {
-	players []*Player
-	snakes  map[uuid.UUID]*objs.Snake
-	scores  map[uuid.UUID]int
-	apples  []*objs.Apple
-	field   *objs.Field
+type Session struct {
+	players     []*Player
+	snakes      map[uuid.UUID]*objs.Snake
+	scores      map[uuid.UUID]int
+	apples      []*objs.Apple
+	field       *objs.Field
+	stateServer StateServer
 }
 
-func NewGame(players []*Player) *GameSession {
-	game := &GameSession{
-		players: players,
+func NewSession(players []*Player, stateServer StateServer) *Session {
+	game := &Session{
+		players:     players,
+		snakes:      make(map[uuid.UUID]*objs.Snake),
+		scores:      make(map[uuid.UUID]int),
+		apples:      make([]*objs.Apple, 0),
+		stateServer: stateServer,
 		field: objs.NewField(
 			common.DefaultFieldHeight,
 			common.DefaultFieldWidth,
@@ -35,16 +40,13 @@ func NewGame(players []*Player) *GameSession {
 	return game
 }
 
-func (g *GameSession) Run() {
-	go func() {
-		for {
-			g.tick()
-		}
-	}()
-	select {}
+func (g *Session) Run() {
+	for {
+		g.tick()
+	}
 }
 
-func (g *GameSession) ChangePlayersDirection(playerId uuid.UUID, direction common.MoveDirection) {
+func (g *Session) ChangePlayersDirection(playerId uuid.UUID, direction common.MoveDirection) {
 	if snake := g.snakes[playerId]; snake != nil {
 		snake.ChangeDirection(direction)
 	} else {
@@ -52,14 +54,13 @@ func (g *GameSession) ChangePlayersDirection(playerId uuid.UUID, direction commo
 	}
 }
 
-func (g *GameSession) tick() {
+func (g *Session) tick() {
 	for _, snake := range g.snakes {
 		snake.Move()
 	}
 
 	for playerId, snake := range g.snakes {
 		if snake.CheckSnakeIntersection(snake) {
-			snake = nil // kills snake
 			g.scores[playerId] = common.DefaultScoreOnStart
 			g.spawnSnake(playerId)
 		} else {
@@ -78,16 +79,45 @@ func (g *GameSession) tick() {
 		}
 	}
 	time.Sleep(100 * time.Millisecond)
+	g.stateServer.SendPublicState(g.buildPublicState())
 }
 
-func (g *GameSession) spawnSnake(playerId uuid.UUID) {
+func (g *Session) buildPublicState() *SessionModel {
+	var apples []*objs.AppleModel
+	var snakes []*objs.SnakeModel
+	for _, apple := range g.apples {
+		apples = append(apples, &objs.AppleModel{Position: apple.Position()})
+	}
+	for _, snake := range g.snakes {
+		node := snake.Head()
+
+		var nodes []*objs.SnakeNodeModel
+		for node != nil {
+			nodes = append(nodes, &objs.SnakeNodeModel{Position: node.Position()})
+			node = node.Next()
+		}
+		snakes = append(snakes, &objs.SnakeModel{Nodes: nodes})
+	}
+	data := &SessionModel{
+		Scores: g.scores,
+		Apples: apples,
+		Snakes: snakes,
+		Field: &objs.FieldModel{
+			Height: g.field.Height(),
+			Width:  g.field.Width(),
+		},
+	}
+	return data
+}
+
+func (g *Session) spawnSnake(playerId uuid.UUID) {
 	snake := objs.NewSnake(g.field)
 
 	// fixme: implement no loop variation (based on map probably)
 	for func() bool {
 		result := false
 		for _, snk := range g.snakes {
-			result = snk.CheckSnakeIntersection(snk)
+			result = snake.CheckSnakeIntersection(snk)
 		}
 		for _, ap := range g.apples {
 			result = result || snake.CheckAppleIntersection(ap)
@@ -99,7 +129,7 @@ func (g *GameSession) spawnSnake(playerId uuid.UUID) {
 	g.snakes[playerId] = snake
 }
 
-func (g *GameSession) spawnApple() {
+func (g *Session) spawnApple() {
 	apple := objs.NewApple(g.field)
 
 	// fixme: implement no loop variation (based on map probably)
