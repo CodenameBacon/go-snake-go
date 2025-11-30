@@ -13,7 +13,7 @@ type Snake struct {
 
 func NewSnake(field *Field) *Snake {
 	return &Snake{
-		head:      NewSnakeNode(common.GetRandomPosition(field.Height(), field.Width()), nil),
+		head:      NewSnakeNode(common.GetRandomPosition(field.height, field.width), nil),
 		direction: common.DefaultMoveDirectionOnStart,
 		field:     field,
 	}
@@ -87,25 +87,25 @@ func (s *Snake) getHeadPositionAfterMove() common.ObjectPosition {
 		common.MoveDirectionUp: func() {
 			position.Y -= 1
 			if position.Y < 0 {
-				position.Y = s.field.Height() - 1
+				position.Y = s.field.height - 1
 			}
 		},
 		common.MoveDirectionDown: func() {
 			position.Y += 1
-			if position.Y > s.field.Height()-1 {
-				position.Y -= s.field.Height()
+			if position.Y > s.field.height-1 {
+				position.Y -= s.field.height
 			}
 		},
 		common.MoveDirectionLeft: func() {
 			position.X -= 1
 			if position.X < 0 {
-				position.X = s.field.Width() - 1
+				position.X = s.field.width - 1
 			}
 		},
 		common.MoveDirectionRight: func() {
 			position.X += 1
-			if position.X > s.field.Width()-1 {
-				position.X -= s.field.Width()
+			if position.X > s.field.width-1 {
+				position.X -= s.field.width
 			}
 		},
 	}
