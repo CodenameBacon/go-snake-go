@@ -5,38 +5,18 @@ import (
 	"go-snake-go/internal/common"
 )
 
-type SnakeNode struct {
-	posX, posY int
-	next       *SnakeNode
-}
-
-func NewSnakeNode(posX, posY int) *SnakeNode {
-	return &SnakeNode{
-		posX: posX,
-		posY: posY,
-		next: nil,
-	}
-}
-
-func (sn *SnakeNode) Position() common.ObjectPosition {
-	return common.ObjectPosition{X: sn.posX, Y: sn.posY}
-}
-
-func (sn *SnakeNode) Next() *SnakeNode {
-	return sn.next
-}
-
 type Snake struct {
+	field     *Field
 	head      *SnakeNode
-	currDir   common.MoveDirection
-	gameField Field
+	direction common.MoveDirection
 }
 
-func NewSnake(field Field) *Snake {
+func NewSnake(field *Field) *Snake {
+	headPosX, headPosY := common.GetRandomPosition(field.Height(), field.Width())
 	return &Snake{
-		head:      NewSnakeNode(common.GetRandomPosition(field.Height(), field.Width())),
-		currDir:   common.DefaultMoveDirectionOnStart,
-		gameField: field,
+		head:      NewSnakeNode(headPosX, headPosY, nil),
+		direction: common.DefaultMoveDirectionOnStart,
+		field:     field,
 	}
 }
 
@@ -45,11 +25,11 @@ func (s *Snake) Head() *SnakeNode {
 }
 
 func (s *Snake) CurrentDirection() common.MoveDirection {
-	return s.currDir
+	return s.direction
 }
 
 func (s *Snake) ChangeDirection(dir common.MoveDirection) {
-	s.currDir = dir
+	s.direction = dir
 }
 
 func (s *Snake) AddTail() {
@@ -58,7 +38,39 @@ func (s *Snake) AddTail() {
 		head = head.next
 	}
 	// dummy node which will be removed on next tick
-	head.next = &SnakeNode{posX: head.posX, posY: head.posY}
+	head.next = NewSnakeNode(head.position.X, head.position.Y, nil)
+}
+
+func (s *Snake) Move() {
+	newPosition := s.getHeadPositionAfterMove()
+	newHead := NewSnakeNode(newPosition.X, newPosition.Y, s.head)
+	s.head = newHead
+	s.removeTail() // fixme: should not be used if snake ate an apple on this Move
+}
+
+func (s *Snake) CheckAppleIntersection(apple *Apple) bool {
+	node := s.head
+	for node != nil {
+		if node.position == apple.Position() {
+			return true
+		}
+		node = node.next
+	}
+	return false
+}
+
+func (s *Snake) CheckSnakeIntersection(snake *Snake) bool {
+	if &s.head != &snake.head && s.head.position == snake.head.position {
+		return true
+	}
+	node := s.head
+	for node.next != nil {
+		node = node.next
+		if node.position == snake.head.position {
+			return true
+		}
+	}
+	return false
 }
 
 // removeTail - removes the last SnakeNode in the ll. Used in Move method.
@@ -70,101 +82,38 @@ func (s *Snake) removeTail() {
 	head.next = nil
 }
 
-func (s *Snake) insertHeadUp() {
-	prevHead := s.head
-	newPosY := prevHead.posY - 1
-	if newPosY < 0 {
-		newPosY = s.gameField.Height() - 1
+func (s *Snake) getHeadPositionAfterMove() common.ObjectPosition {
+	position := s.head.position
+	actions := map[common.MoveDirection]func(){
+		common.MoveDirectionUp: func() {
+			position.Y -= 1
+			if position.Y < 0 {
+				position.Y = s.field.Height() - 1
+			}
+		},
+		common.MoveDirectionDown: func() {
+			position.Y += 1
+			if position.Y > s.field.Height()-1 {
+				position.Y -= s.field.Height()
+			}
+		},
+		common.MoveDirectionLeft: func() {
+			position.X -= 1
+			if position.X < 0 {
+				position.X = s.field.Width() - 1
+			}
+		},
+		common.MoveDirectionRight: func() {
+			position.X += 1
+			if position.X > s.field.Width()-1 {
+				position.X -= s.field.Width()
+			}
+		},
 	}
-	newHead := &SnakeNode{
-		posX: prevHead.posX,
-		posY: newPosY,
-		next: prevHead,
-	}
-	s.head = newHead
-}
-
-func (s *Snake) insertHeadDown() {
-	prevHead := s.head
-	newPosY := prevHead.posY + 1
-	if newPosY > s.gameField.Height()-1 {
-		newPosY = newPosY - s.gameField.Height()
-	}
-	newHead := &SnakeNode{
-		posX: prevHead.posX,
-		posY: newPosY,
-		next: prevHead,
-	}
-	s.head = newHead
-}
-
-func (s *Snake) insertHeadLeft() {
-	prevHead := s.head
-	newPosX := prevHead.posX - 1
-	if newPosX < 0 {
-		newPosX = s.gameField.Width() - 1
-	}
-	newHead := &SnakeNode{
-		posX: newPosX,
-		posY: prevHead.posY,
-		next: prevHead,
-	}
-	s.head = newHead
-}
-
-func (s *Snake) insertHeadRight() {
-	prevHead := s.head
-	newPosX := prevHead.posX + 1
-	if newPosX > s.gameField.Width()-1 {
-		newPosX = newPosX - s.gameField.Width()
-	}
-	newHead := &SnakeNode{
-		posX: newPosX,
-		posY: prevHead.posY,
-		next: prevHead,
-	}
-	s.head = newHead
-}
-
-func (s *Snake) Move() {
-	methodsToCall := map[common.MoveDirection]func(){
-		common.MoveDirectionUp:    s.insertHeadUp,
-		common.MoveDirectionDown:  s.insertHeadDown,
-		common.MoveDirectionLeft:  s.insertHeadLeft,
-		common.MoveDirectionRight: s.insertHeadRight,
-	}
-	if methodsToCall[s.currDir] != nil {
-		methodsToCall[s.currDir]()
+	if actions[s.direction] != nil {
+		actions[s.direction]()
 	} else {
-		panic(fmt.Sprintf("Impossible Move for perform: %s", s.currDir))
+		panic(fmt.Sprintf("Impossible Move for perform: %s", s.direction))
 	}
-	s.removeTail() // fixme: should not be used if snake ate an apple on this Move
-}
-
-func (s *Snake) CheckAppleIntersection(apple *Apple) bool {
-	if s.head.Position() == apple.Position() {
-		return true // intersects with head
-	}
-	node := s.head
-	for node.next != nil {
-		node = node.next
-		if node.Position() == apple.Position() {
-			return true // intersects with other nodes of snake
-		}
-	}
-	return false // not intersecting
-}
-
-func (s *Snake) CheckSnakeIntersection(snake *Snake) bool {
-	if &s.head != &snake.head && s.head.Position() == snake.head.Position() {
-		return true // intersects with head
-	}
-	node := s.head
-	for node.next != nil {
-		node = node.next
-		if node.Position() == snake.head.Position() {
-			return true // intersects with other nodes of snake
-		}
-	}
-	return false // not intersecting
+	return position
 }
