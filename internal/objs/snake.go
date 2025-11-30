@@ -31,20 +31,30 @@ func (s *Snake) ChangeDirection(dir common.MoveDirection) {
 	s.direction = dir
 }
 
-func (s *Snake) AddTail() {
+// Grow - adds new SnakeNode as tail which will be placed as head on the next tick
+func (s *Snake) Grow() {
 	head := s.head
 	for head.next != nil {
 		head = head.next
 	}
-	// dummy node which will be removed on next tick
 	head.next = NewSnakeNode(head.position, nil)
 }
 
+// Move - places tail node as new head on the position after move
 func (s *Snake) Move() {
-	newPosition := s.getHeadPositionAfterMove()
-	newHead := NewSnakeNode(newPosition, s.head)
-	s.head = newHead
-	s.removeTail() // fixme: should not be used if snake ate an apple on this Move
+	headPosition := s.getHeadPositionAfterMove()
+	preTail := s.head
+	for preTail.next != nil && preTail.next.next != nil {
+		preTail = preTail.next
+	}
+	oldHead := s.head
+	// if snakeLength > 1
+	if preTail.next != nil {
+		s.head = preTail.next
+	}
+	s.head.position = headPosition
+	s.head.next = oldHead
+	preTail.next = nil
 }
 
 func (s *Snake) CheckAppleIntersection(apple *Apple) bool {
@@ -70,15 +80,6 @@ func (s *Snake) CheckSnakeIntersection(snake *Snake) bool {
 		}
 	}
 	return false
-}
-
-// removeTail - removes the last SnakeNode in the ll. Used in Move method.
-func (s *Snake) removeTail() {
-	head := s.head
-	for head.next != nil && head.next.next != nil {
-		head = head.next
-	}
-	head.next = nil
 }
 
 func (s *Snake) getHeadPositionAfterMove() common.ObjectPosition {
