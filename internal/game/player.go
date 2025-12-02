@@ -17,6 +17,7 @@ const (
 type Player struct {
 	id       uuid.UUID `json:"id"`
 	username string    `json:"username"`
+	score    int       `json:"score"`
 }
 
 func NewPlayer(username string) *Player {

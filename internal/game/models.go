@@ -6,9 +6,14 @@ import (
 	"github.com/google/uuid"
 )
 
+type ScoreModel struct {
+	username string
+	score    int
+}
+
 type SessionModel struct {
-	Scores map[uuid.UUID]int `json:"scores"`
-	Field  *objs.FieldModel  `json:"field"`
+	Scores []*ScoreModel    `json:"scores"`
+	Field  *objs.FieldModel `json:"field"`
 }
 
 type CurrentPlayerModel struct {

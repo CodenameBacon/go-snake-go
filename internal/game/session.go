@@ -9,28 +9,34 @@ import (
 )
 
 type Session struct {
-	players     []*Player
-	snakes      map[uuid.UUID]*objs.Snake
-	scores      map[uuid.UUID]int
-	field       *objs.Field
-	stateServer StateServer
+	players      map[uuid.UUID]*Player
+	playersOrder []uuid.UUID
+	snakes       map[uuid.UUID]*objs.Snake
+	field        *objs.Field
+	stateServer  StateServer
 }
 
 func NewSession(players []*Player, stateServer StateServer) *Session {
 	session := &Session{
-		players:     players,
-		snakes:      make(map[uuid.UUID]*objs.Snake),
-		scores:      make(map[uuid.UUID]int),
-		stateServer: stateServer,
+		players:      make(map[uuid.UUID]*Player),
+		playersOrder: make([]uuid.UUID, 0),
+		snakes:       make(map[uuid.UUID]*objs.Snake),
+		stateServer:  stateServer,
 		field: objs.NewField(
 			common.DefaultFieldHeight,
 			common.DefaultFieldWidth,
 		),
 	}
-	// snake, initial score and apples for each player
 	for _, player := range players {
+		// avoiding equal usernames
+		player.username = uniqueUsername(player.username, session.players)
+		// players map for fast access
+		session.players[player.id] = player
+		// players order slice to keep scores order without sorting on client side
+		session.playersOrder = append(session.playersOrder, player.id)
+		// snake, initial score and apples for each player
 		session.snakes[player.id] = session.field.SpawnSnake()
-		session.scores[player.id] = common.DefaultScoreOnStart
+		session.players[player.id].score = common.DefaultScoreOnStart
 		for i := 0; i < common.DefaultTotalApplesOnStart; i++ {
 			session.field.SpawnApple()
 		}
@@ -107,14 +113,14 @@ func (s *Session) tick() {
 	for playerId, snake := range s.snakes {
 		if toKill[playerId] {
 			snake.Kill()
-			s.scores[playerId] = common.DefaultScoreOnStart
+			s.players[playerId].score = common.DefaultScoreOnStart
 			s.snakes[playerId] = s.field.SpawnSnake()
 			continue
 		}
 
 		switch s.field.CheckCellType(future[playerId]) {
 		case objs.CellApple:
-			s.scores[playerId] += common.DefaultScoreIncrease
+			s.players[playerId].score += common.DefaultScoreIncrease
 			snake.Grow()
 			s.field.ClearCell(future[playerId])
 			s.field.SpawnApple()
@@ -130,8 +136,15 @@ func (s *Session) tick() {
 }
 
 func (s *Session) buildPublicState() *SessionModel {
+	scores := make([]*ScoreModel, 0)
+	for _, playerId := range s.playersOrder {
+		scores = append(scores, &ScoreModel{
+			username: s.players[playerId].username,
+			score:    s.players[playerId].score,
+		})
+	}
 	return &SessionModel{
-		Scores: s.scores,
+		Scores: scores,
 		Field: &objs.FieldModel{
 			Height: s.field.Height(),
 			Width:  s.field.Width(),

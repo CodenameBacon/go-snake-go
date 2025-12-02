@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"go-snake-go/internal/common"
 	"go-snake-go/internal/objs"
 	"os"
@@ -50,6 +51,22 @@ func drawGameField(sessionModel *SessionModel) {
 	for _, row := range grid {
 		sb.WriteString(strings.Join(row, ""))
 		sb.WriteByte('\n')
+	}
+
+	currPlayer := 1
+	for _, score := range sessionModel.Scores {
+		sb.WriteString(
+			fmt.Sprintf(
+				"%s: %d%s",
+				score.username,
+				score.score,
+				"          ", // fixme: implement something to avoid this (used to clear score after death)
+			),
+		)
+		if currPlayer < len(sessionModel.Scores) {
+			sb.WriteByte('\n')
+			currPlayer++
+		}
 	}
 
 	os.Stdout.Write([]byte(sb.String()))
