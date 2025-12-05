@@ -43,14 +43,14 @@ func NewSession(players []*Player, stateServer StateServer) *Session {
 	}
 	for _, player := range players {
 		// avoiding equal usernames
-		player.username = uniqueUsername(player.username, session.players)
+		player.Username = uniqueUsername(player.Username, session.players)
 		// players map for fast access
-		session.players[player.id] = player
+		session.players[player.Id] = player
 		// players order slice to keep scores order without sorting on client side
-		session.playersOrder = append(session.playersOrder, player.id)
-		// snake, initial score and apples for each player
-		session.snakes[player.id] = session.field.SpawnSnake()
-		session.players[player.id].score = common.DefaultScoreOnStart
+		session.playersOrder = append(session.playersOrder, player.Id)
+		// snake, initial Score and apples for each player
+		session.snakes[player.Id] = session.field.SpawnSnake()
+		session.players[player.Id].Score = common.DefaultScoreOnStart
 		for i := 0; i < common.DefaultTotalApplesOnStart; i++ {
 			session.field.SpawnApple()
 		}
@@ -73,19 +73,19 @@ func (s *Session) HandleInputActions() {
 		case action := <-s.InputActionChan:
 			switch action.ActionId {
 			case InputChangeDirUp:
-				s.ChangePlayersDirection(action.PlayerId, common.MoveDirectionUp)
+				s.changeDirection(action.PlayerId, common.MoveDirectionUp)
 			case InputChangeDirDown:
-				s.ChangePlayersDirection(action.PlayerId, common.MoveDirectionDown)
+				s.changeDirection(action.PlayerId, common.MoveDirectionDown)
 			case InputChangeDirLeft:
-				s.ChangePlayersDirection(action.PlayerId, common.MoveDirectionLeft)
+				s.changeDirection(action.PlayerId, common.MoveDirectionLeft)
 			case InputChangeDirRight:
-				s.ChangePlayersDirection(action.PlayerId, common.MoveDirectionRight)
+				s.changeDirection(action.PlayerId, common.MoveDirectionRight)
 			}
 		}
 	}
 }
 
-func (s *Session) ChangePlayersDirection(playerId uuid.UUID, direction common.MoveDirection) {
+func (s *Session) changeDirection(playerId uuid.UUID, direction common.MoveDirection) {
 	if snake := s.snakes[playerId]; snake != nil {
 		snake.ChangeDirection(direction)
 	} else {
@@ -148,14 +148,14 @@ func (s *Session) tick() {
 	for playerId, snake := range s.snakes {
 		if toKill[playerId] {
 			snake.Kill()
-			s.players[playerId].score = common.DefaultScoreOnStart
+			s.players[playerId].Score = common.DefaultScoreOnStart
 			s.snakes[playerId] = s.field.SpawnSnake()
 			continue
 		}
 
 		switch s.field.CheckCellType(future[playerId]) {
 		case objs.CellApple:
-			s.players[playerId].score += common.DefaultScoreIncrease
+			s.players[playerId].Score += common.DefaultScoreIncrease
 			snake.Grow()
 			s.field.ClearCell(future[playerId])
 			s.field.SpawnApple()
@@ -174,8 +174,8 @@ func (s *Session) buildPublicState() *SessionModel {
 	scores := make([]*ScoreModel, 0)
 	for _, playerId := range s.playersOrder {
 		scores = append(scores, &ScoreModel{
-			Username: s.players[playerId].username,
-			Score:    s.players[playerId].score,
+			Username: s.players[playerId].Username,
+			Score:    s.players[playerId].Score,
 		})
 	}
 	return &SessionModel{

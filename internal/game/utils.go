@@ -7,7 +7,7 @@ func uniqueUsername(base string, players map[uuid.UUID]*Player) string {
 	for {
 		conflict := false
 		for _, p := range players {
-			if p.username == username {
+			if p.Username == username {
 				conflict = true
 				break
 			}

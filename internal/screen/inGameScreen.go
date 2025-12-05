@@ -56,22 +56,22 @@ func (s *SoloInGameScreen) HandleKeys(l *Launcher) {
 			panic("Implement me!")
 		case keyboard.KeyArrowUp:
 			s.inputActionChan <- &game.InputAction{
-				PlayerId: s.player.Id(),
+				PlayerId: s.player.Id,
 				ActionId: game.InputChangeDirUp,
 			}
 		case keyboard.KeyArrowDown:
 			s.inputActionChan <- &game.InputAction{
-				PlayerId: s.player.Id(),
+				PlayerId: s.player.Id,
 				ActionId: game.InputChangeDirDown,
 			}
 		case keyboard.KeyArrowLeft:
 			s.inputActionChan <- &game.InputAction{
-				PlayerId: s.player.Id(),
+				PlayerId: s.player.Id,
 				ActionId: game.InputChangeDirLeft,
 			}
 		case keyboard.KeyArrowRight:
 			s.inputActionChan <- &game.InputAction{
-				PlayerId: s.player.Id(),
+				PlayerId: s.player.Id,
 				ActionId: game.InputChangeDirRight,
 			}
 		default:
