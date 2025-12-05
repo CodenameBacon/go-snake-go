@@ -1,8 +1,9 @@
-package game
+package screen
 
 import (
 	"fmt"
 	"go-snake-go/internal/common"
+	"go-snake-go/internal/game"
 	"go-snake-go/internal/objs"
 	"os"
 	"strings"
@@ -18,10 +19,9 @@ func ResetTerminal() {
 	os.Stdout.Write(common.ShowCursor)
 }
 
-func drawGameField(sessionModel *SessionModel) {
+func drawSessionState(sessionModel *game.SessionModel) {
 	width := sessionModel.Field.Width + 2
 	height := sessionModel.Field.Height + 2
-	os.Stdout.Write(common.CursorHome)
 
 	sb := strings.Builder{}
 	sb.Grow(width * height * 2)
@@ -58,8 +58,8 @@ func drawGameField(sessionModel *SessionModel) {
 		sb.WriteString(
 			fmt.Sprintf(
 				"%s: %d%s",
-				score.username,
-				score.score,
+				score.Username,
+				score.Score,
 				"          ", // fixme: implement something to avoid this (used to clear score after death)
 			),
 		)

@@ -4,9 +4,10 @@ type StateServer interface {
 	SendPublicState(sessionModel *SessionModel)
 }
 
-type SoloStateServer struct{}
+type SoloStateServer struct {
+	StateChan chan *SessionModel
+}
 
 func (s *SoloStateServer) SendPublicState(sessionModel *SessionModel) {
-	// simply writes into the stdout
-	drawGameField(sessionModel)
+	s.StateChan <- sessionModel
 }

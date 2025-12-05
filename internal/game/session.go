@@ -8,20 +8,34 @@ import (
 	"github.com/google/uuid"
 )
 
+type InputAction struct {
+	PlayerId uuid.UUID
+	ActionId int
+}
+
+const (
+	InputChangeDirUp    int = iota
+	InputChangeDirDown  int = iota
+	InputChangeDirLeft  int = iota
+	InputChangeDirRight int = iota
+)
+
 type Session struct {
-	players      map[uuid.UUID]*Player
-	playersOrder []uuid.UUID
-	snakes       map[uuid.UUID]*objs.Snake
-	field        *objs.Field
-	stateServer  StateServer
+	players         map[uuid.UUID]*Player
+	playersOrder    []uuid.UUID
+	snakes          map[uuid.UUID]*objs.Snake
+	field           *objs.Field
+	stateServer     StateServer
+	InputActionChan chan *InputAction
 }
 
 func NewSession(players []*Player, stateServer StateServer) *Session {
 	session := &Session{
-		players:      make(map[uuid.UUID]*Player),
-		playersOrder: make([]uuid.UUID, 0),
-		snakes:       make(map[uuid.UUID]*objs.Snake),
-		stateServer:  stateServer,
+		players:         make(map[uuid.UUID]*Player),
+		playersOrder:    make([]uuid.UUID, 0),
+		snakes:          make(map[uuid.UUID]*objs.Snake),
+		InputActionChan: make(chan *InputAction),
+		stateServer:     stateServer,
 		field: objs.NewField(
 			common.DefaultFieldHeight,
 			common.DefaultFieldWidth,
@@ -45,8 +59,29 @@ func NewSession(players []*Player, stateServer StateServer) *Session {
 }
 
 func (s *Session) Run() {
+	go func() {
+		for {
+			s.tick()
+		}
+	}()
+	go s.HandleInputActions()
+}
+
+func (s *Session) HandleInputActions() {
 	for {
-		s.tick()
+		select {
+		case action := <-s.InputActionChan:
+			switch action.ActionId {
+			case InputChangeDirUp:
+				s.ChangePlayersDirection(action.PlayerId, common.MoveDirectionUp)
+			case InputChangeDirDown:
+				s.ChangePlayersDirection(action.PlayerId, common.MoveDirectionDown)
+			case InputChangeDirLeft:
+				s.ChangePlayersDirection(action.PlayerId, common.MoveDirectionLeft)
+			case InputChangeDirRight:
+				s.ChangePlayersDirection(action.PlayerId, common.MoveDirectionRight)
+			}
+		}
 	}
 }
 
@@ -139,8 +174,8 @@ func (s *Session) buildPublicState() *SessionModel {
 	scores := make([]*ScoreModel, 0)
 	for _, playerId := range s.playersOrder {
 		scores = append(scores, &ScoreModel{
-			username: s.players[playerId].username,
-			score:    s.players[playerId].score,
+			Username: s.players[playerId].username,
+			Score:    s.players[playerId].score,
 		})
 	}
 	return &SessionModel{

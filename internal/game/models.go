@@ -7,8 +7,8 @@ import (
 )
 
 type ScoreModel struct {
-	username string
-	score    int
+	Username string
+	Score    int
 }
 
 type SessionModel struct {
