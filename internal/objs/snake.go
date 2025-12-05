@@ -64,7 +64,7 @@ func (s *Snake) Move() {
 	if s.head.next == nil {
 		s.field.ClearCell(s.head.position)
 		s.head.position = newHeadPos
-		s.field.SetCellType(newHeadPos, CellSnake)
+		s.field.SetCellType(newHeadPos, CellSnakeHead)
 		return
 	}
 
@@ -76,10 +76,12 @@ func (s *Snake) Move() {
 	if preTail.next != nil {
 		s.field.ClearCell(preTail.next.position)
 		preTail.next = nil
+		s.field.SetCellType(preTail.position, CellSnakeTail)
 	}
 
 	s.head = NewSnakeNode(newHeadPos, s.head)
-	s.field.SetCellType(newHeadPos, CellSnake)
+	s.field.SetCellType(newHeadPos, CellSnakeHead)
+	s.field.SetCellType(s.head.next.position, CellSnakeNode)
 }
 
 func (s *Snake) Kill() {

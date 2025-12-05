@@ -41,8 +41,12 @@ func drawSessionState(sessionModel *game.SessionModel) {
 
 	for position, cellType := range sessionModel.Field.Cells {
 		switch cellType {
-		case objs.CellSnake:
+		case objs.CellSnakeHead:
+			grid[position.Y+1][position.X+1] = common.SnakeHead // + 1 for borders
+		case objs.CellSnakeNode:
 			grid[position.Y+1][position.X+1] = common.SnakeNode // + 1 for borders
+		case objs.CellSnakeTail:
+			grid[position.Y+1][position.X+1] = common.SnakeTail // + 1 for borders
 		case objs.CellApple:
 			grid[position.Y+1][position.X+1] = common.Apple // + 1 for borders
 		}

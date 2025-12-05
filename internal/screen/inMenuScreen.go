@@ -3,6 +3,7 @@ package screen
 import (
 	"go-snake-go/internal/common"
 	"os"
+	"strings"
 
 	"github.com/eiannone/keyboard"
 )
@@ -11,6 +12,7 @@ type InMenuScreen struct {
 	title   string
 	actions []ScreenAction
 	cursor  int
+	level   int
 }
 
 func (s *InMenuScreen) clearTerminal() {
@@ -23,7 +25,7 @@ func (s *InMenuScreen) draw() {
 	os.Stdout.Write([]byte("go-snake-go: " + s.title + "\n"))
 	os.Stdout.Write([]byte("\n"))
 	for index, action := range s.actions {
-		os.Stdout.Write([]byte(action.Text()))
+		os.Stdout.Write([]byte(strings.Repeat(">", s.level) + " " + action.Text()))
 		if index == s.cursor {
 			os.Stdout.Write([]byte(" <--"))
 		}
@@ -31,7 +33,8 @@ func (s *InMenuScreen) draw() {
 	}
 }
 
-func (s *InMenuScreen) Open(_ *Launcher) {
+func (s *InMenuScreen) Open(l *Launcher) {
+	s.level = len(l.screens)
 	s.draw()
 }
 

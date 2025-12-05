@@ -6,7 +6,9 @@ type CellType int
 
 const (
 	CellEmpty CellType = iota
-	CellSnake
+	CellSnakeHead
+	CellSnakeTail
+	CellSnakeNode
 	CellApple
 )
 

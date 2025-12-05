@@ -121,7 +121,10 @@ func (s *Session) tick() {
 		if toKill[playerId] {
 			continue
 		}
-		if s.field.CheckCellType(position) == objs.CellSnake {
+		if s.field.CheckCellType(position) == objs.CellSnakeNode {
+			toKill[playerId] = true
+		}
+		if s.field.CheckCellType(position) == objs.CellSnakeTail {
 			toKill[playerId] = true
 		}
 	}

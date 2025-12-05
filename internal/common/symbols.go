@@ -2,7 +2,9 @@ package common
 
 // symbols used to draw field
 const (
-	SnakeNode string = "@ "
+	SnakeHead string = "⬤ "
+	SnakeNode string = "● "
+	SnakeTail string = "• "
 	Apple     string = "$ "
 	FieldWall string = "# "
 	Empty     string = "  "
